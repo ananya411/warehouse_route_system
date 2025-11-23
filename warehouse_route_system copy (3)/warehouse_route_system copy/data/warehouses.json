@@ -1,0 +1,36 @@
+[
+    {
+        "name": "Warehouse A",
+        "city": "Patna",
+        "location": {
+            "lat": 25.59,
+            "lon": 85.13
+        },
+        "items": [
+            {
+                "name": "spare parts",
+                "quantity": 9
+            },
+            {
+                "name": "spare parts2",
+                "quantity": 30,
+                "image": ""
+            }
+        ]
+    },
+    {
+        "name": "Arrah A",
+        "city": "Arrah",
+        "location": {
+            "lat": 25.5541,
+            "lon": 84.6665
+        },
+        "items": [
+            {
+                "name": "spare parts",
+                "quantity": 7,
+                "image": ""
+            }
+        ]
+    }
+]

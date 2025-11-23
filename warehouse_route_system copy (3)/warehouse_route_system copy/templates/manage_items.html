@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Items - {{ warehouse.name }}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    h2 {
+      color: #333;
+    }
+    a {
+      text-decoration: none;
+      color: #007BFF;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    input[type="text"], input[type="number"], input[type="url"], input[type="file"] {
+      padding: 5px;
+      width: 300px;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      margin-bottom: 10px;
+      background: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .badge {
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-size: 12px;
+      color: white;
+    }
+    .low { background-color: red; }
+    .medium { background-color: orange; }
+    .high { background-color: green; }
+
+    .image-thumb {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      margin-right: 10px;
+      border-radius: 4px;
+    }
+
+    .left {
+      display: flex;
+      align-items: center;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .export-btn {
+      margin: 10px 0;
+      background-color: #007BFF;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Items in {{ warehouse.name }} ({{ warehouse.city }})</h2>
+  <a href="/dashboard">← Back to Dashboard</a><br><br>
+
+  <h3>🔍 Search Items</h3>
+  <input type="text" id="searchInput" placeholder="Search item by name..." onkeyup="filterItems()"><br><br>
+
+  {% if warehouse['items'] %}
+    <button class="export-btn" onclick="exportToCSV()">📤 Export to CSV</button>
+    <ul id="itemList">
+      {% for item in warehouse['items'] %}
+        <li>
+          <div class="left">
+            {% if item.image %}
+              <img src="{{ item.image }}" class="image-thumb">
+            {% endif %}
+            <div>
+              <strong class="item-name">{{ item.name }}</strong><br>
+              Quantity: {{ item.quantity }}
+              {% if item.quantity < 10 %}
+                <span class="badge low">Low</span>
+              {% elif item.quantity < 30 %}
+                <span class="badge medium">Medium</span>
+              {% else %}
+                <span class="badge high">High</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="right">
+            [<a href="/warehouse/{{ wid }}/edit/{{ loop.index0 }}">Edit</a>] |
+            [<a href="/warehouse/{{ wid }}/delete/{{ loop.index0 }}" onclick="return confirm('Are you sure?')">Delete</a>]
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No items in this warehouse yet.</p>
+  {% endif %}
+
+  <h3>Add New Item</h3>
+  <form method="POST" enctype="multipart/form-data">
+    <label>Item Name:</label><br>
+    <input name="item" required><br><br>
+
+    <label>Quantity:</label><br>
+    <input name="quantity" type="number" min="1" required><br><br>
+
+    <label>Image File (optional):</label><br>
+    <input type="file" name="image_file" accept="image/*"><br><br>
+
+    <label>Or Image URL (optional):</label><br>
+    <input name="image_url" type="url"><br><br>
+
+    <button type="submit">Add Item</button>
+  </form>
+
+  <script>
+    function filterItems() {
+      const input = document.getElementById('searchInput');
+      const filter = input.value.toLowerCase();
+      const list = document.getElementById('itemList');
+      const items = list.getElementsByTagName('li');
+
+      for (let i = 0; i < items.length; i++) {
+        const name = items[i].getElementsByClassName('item-name')[0];
+        if (name.innerText.toLowerCase().includes(filter)) {
+          items[i].style.display = '';
+        } else {
+          items[i].style.display = 'none';
+        }
+      }
+    }
+
+    function exportToCSV() {
+      let csv = "Item Name,Quantity\n";
+      const items = document.querySelectorAll("#itemList li");
+      items.forEach(item => {
+        const name = item.querySelector(".item-name").innerText;
+        const qtyText = item.innerText.match(/Quantity:\s*(\d+)/);
+        const qty = qtyText ? qtyText[1] : 0;
+        csv += `"${name}",${qty}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.setAttribute("href", URL.createObjectURL(blob));
+      link.setAttribute("download", "warehouse_items.csv");
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
